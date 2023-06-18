@@ -1,28 +1,39 @@
-name: deploy to github pages
+name: Deploy to Github Pages
 on:
   push:
-    branches: [master]
-jobs:
-  build-and-deploy:
-    name: Build and Deploy
-    runs-on: ubuntu-latest
+    branches: ["master"]
+  workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v3
       - name: Package install
         run: yarn install
-
       - name: Test
         run: yarn test
-
       - name: Build
         run: yarn build
-
-      - name: Deploy
-        run: |
-          git config --global user.name 'İsmet Kizgin'
-          git config --global user.email 'info@ismetkizgin.com.tr'
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}    
-          git push
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: "./build"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
