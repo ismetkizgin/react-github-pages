@@ -1,0 +1,28 @@
+name: deploy to github pages
+on:
+  push:
+    branches: [master]
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Package install
+        run: yarn install
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      - name: Deploy
+        run: |
+          git config --global user.name 'İsmet Kizgin'
+          git config --global user.email 'info@ismetkizgin.com.tr'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}    
+          git push
